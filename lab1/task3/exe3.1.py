@@ -1,5 +1,5 @@
 def reading_file(mode):
-    with open("example.txt", "r", encoding="utf-8") as file:
+    with open("lab1\example.txt", "r", encoding="utf-8") as file:
         if mode == "all":
             print(file.read())
         elif mode == "line":
