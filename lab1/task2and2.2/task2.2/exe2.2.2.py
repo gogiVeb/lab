@@ -13,6 +13,6 @@ def checking_num(text):
         number = input(text).strip()
         if number.isdigit():
             return int(number)
-        print("Вводите только положительные числа.")
+        print("Вводите только положител3ьные числа.")
 user_num = checking_num("Введите число: ")
 print(is_prime(user_num))
