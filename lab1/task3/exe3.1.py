@@ -7,8 +7,7 @@ def reading_file(mode):
                 print(line)
         elif mode == "list":
             print(file.readlines())
-
-
+            
 def reading_selection():
     while True:
         choice = input("Введите режим чтения:\n"
