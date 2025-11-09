@@ -3,4 +3,3 @@
 def greet (name):
     print(f'Привет {name} !')
 greet(input('Введите имя пользователя: '))
-

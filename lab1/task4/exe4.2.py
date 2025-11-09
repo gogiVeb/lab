@@ -1,12 +1,7 @@
 import my_module
-
-
 num1 = float(input('Введите первое число '))
 num2 = float(input('Введите второе число '))
-
-
 def expression_selection():
-
     while True:
         expression = input("Выберите какое выражение хотите сделать:\n"
                      "sum - Найти сумму\n"
