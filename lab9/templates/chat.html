@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <title>WebSocket Чат</title>
+  <style>
+    body { font-family: Arial, sans-serif; max-width: 600px; margin: 40px auto; padding: 0 20px; background: #f0f2f5; }
+    h1 { color: #333; text-align: center; }
+    #loginScreen { background: white; padding: 30px; border-radius: 10px; text-align: center; }
+    #loginScreen input { padding: 10px; width: 60%; border: 1px solid #ccc; border-radius: 6px; font-size: 16px; }
+    #loginScreen button { padding: 10px 20px; background: #4CAF50; color: white; border: none; border-radius: 6px; font-size: 16px; cursor: pointer; }
+    #chatScreen { display: none; }
+    #status { text-align: center; padding: 6px; border-radius: 6px; margin-bottom: 10px; font-size: 14px; }
+    .connected { background: #d4edda; color: #155724; }
+    .disconnected { background: #f8d7da; color: #721c24; }
+    #messages { list-style: none; padding: 15px; margin: 0 0 12px 0; background: white; border-radius: 10px; height: 350px; overflow-y: auto; }
+    #messages li { padding: 8px 12px; margin-bottom: 6px; border-radius: 8px; background: #e8f4fd; }
+    #messages li.system { background: #fff3cd; color: #856404; font-style: italic; }
+    #messages li.error { background: #f8d7da; color: #721c24; }
+    .input-row { display: flex; gap: 8px; }
+    .input-row input { flex: 1; padding: 10px; border: 1px solid #ccc; border-radius: 6px; font-size: 15px; }
+    .input-row button { padding: 10px 20px; background: #007bff; color: white; border: none; border-radius: 6px; cursor: pointer; }
+    .input-row button:disabled { background: #aaa; }
+  </style>
+</head>
+<body>
+  <h1>💬 WebSocket Чат</h1>
+
+  <div id="loginScreen">
+    <h2>Введите ваше имя</h2>
+    <input type="text" id="usernameInput" placeholder="Ваше имя..." maxlength="30" />
+    <button onclick="connectToChat()">Войти в чат</button>
+    <p id="loginError" style="color:red; display:none;">Пожалуйста, введите имя!</p>
+  </div>
+
+  <div id="chatScreen">
+    <div id="status" class="disconnected">⏳ Подключение...</div>
+    <ul id="messages"></ul>
+    <div class="input-row">
+      <input type="text" id="messageInput" placeholder="Введите сообщение..." autocomplete="off" />
+      <button id="sendBtn" onclick="sendMessage()" disabled>Отправить</button>
+    </div>
+  </div>
+
+  <script>
+    let ws = null;
+
+    function connectToChat() {
+      const username = document.getElementById("usernameInput").value.trim();
+      if (!username) {
+        document.getElementById("loginError").style.display = "block";
+        return;
+      }
+      document.getElementById("loginScreen").style.display = "none";
+      document.getElementById("chatScreen").style.display = "block";
+
+      ws = new WebSocket(`ws://localhost:8000/ws?username=${encodeURIComponent(username)}`);
+
+      ws.onopen = function () {
+        setStatus("✅ Подключено как: " + username, true);
+        document.getElementById("sendBtn").disabled = false;
+        addMessage("Вы вошли в чат как «" + username + "»", "system");
+      };
+
+      ws.onmessage = function (event) {
+        const text = event.data;
+        if (text.startsWith("🟢") || text.startsWith("🔴")) {
+          addMessage(text, "system");
+        } else if (text.startsWith("ОШИБКА:")) {
+          addMessage(text, "error");
+        } else {
+          addMessage(text, "");
+        }
+      };
+
+      ws.onclose = function () {
+        setStatus("🔴 Соединение закрыто", false);
+        document.getElementById("sendBtn").disabled = true;
+      };
+
+      document.getElementById("messageInput").addEventListener("keydown", function (e) {
+        if (e.key === "Enter") sendMessage();
+      });
+    }
+
+    function sendMessage() {
+      const input = document.getElementById("messageInput");
+      const text = input.value.trim();
+      if (!text || !ws || ws.readyState !== WebSocket.OPEN) return;
+      ws.send(text);
+      addMessage("Вы: " + text, "");
+      input.value = "";
+    }
+
+    function addMessage(text, cssClass) {
+      const messages = document.getElementById("messages");
+      const li = document.createElement("li");
+      if (cssClass) li.classList.add(cssClass);
+      li.textContent = text;
+      messages.appendChild(li);
+      messages.scrollTop = messages.scrollHeight;
+    }
+
+    function setStatus(text, isConnected) {
+      const el = document.getElementById("status");
+      el.textContent = text;
+      el.className = isConnected ? "connected" : "disconnected";
+    }
+
+    document.getElementById("usernameInput").focus();
+    document.getElementById("usernameInput").addEventListener("keydown", function(e) {
+      if (e.key === "Enter") connectToChat();
+    });
+  </script>
+</body>
+</html>

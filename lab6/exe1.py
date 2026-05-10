@@ -64,8 +64,7 @@ class TicTacToeGame(QMainWindow):
         if self.buttons[0][0].text() == self.buttons[1][1].text() == self.buttons[2][2].text() != "":
             return True
         if self.buttons[0][2].text() == self.buttons[1][1].text() == self.buttons[2][0].text() != "":
-            return True
-            
+            return True 
         return False
 
     def end_game(self, message):
